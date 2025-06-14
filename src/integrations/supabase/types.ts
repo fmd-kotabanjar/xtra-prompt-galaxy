@@ -30,6 +30,45 @@ export type Database = {
         }
         Relationships: []
       }
+      prompts: {
+        Row: {
+          category: string
+          created_at: string
+          credit_cost: number
+          example_image_url: string | null
+          id: string
+          is_premium: boolean
+          platform: string
+          prompt_text: string
+          title: string
+          usage_tips: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          credit_cost?: number
+          example_image_url?: string | null
+          id?: string
+          is_premium?: boolean
+          platform: string
+          prompt_text: string
+          title: string
+          usage_tips?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          credit_cost?: number
+          example_image_url?: string | null
+          id?: string
+          is_premium?: boolean
+          platform?: string
+          prompt_text?: string
+          title?: string
+          usage_tips?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

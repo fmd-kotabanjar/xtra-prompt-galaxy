@@ -17,6 +17,7 @@ import { AuthProvider } from "./context/AuthContext";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import ProfileSettings from "./pages/ProfileSettings";
+import PromptDetail from "./pages/PromptDetail";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/dashboard/settings" element={<ProfileSettings />} />
                 <Route path="/browse" element={<Browse />} />
+                <Route path="/prompt/:id" element={<PromptDetail />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/terms" element={<Terms />} />
