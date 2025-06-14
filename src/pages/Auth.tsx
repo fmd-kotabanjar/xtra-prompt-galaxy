@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -30,6 +29,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { useTranslation } from 'react-i18next';
 
 const signUpSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
@@ -44,6 +44,7 @@ const loginSchema = z.object({
 const Auth = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const signUpForm = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
@@ -102,14 +103,14 @@ const Auth = () => {
     <div className="container flex items-center justify-center min-h-[calc(100vh-12rem)]">
       <Tabs defaultValue="login" className="w-[400px]">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="login">Login</TabsTrigger>
-          <TabsTrigger value="signup">Sign Up</TabsTrigger>
+          <TabsTrigger value="login">{t('login')}</TabsTrigger>
+          <TabsTrigger value="signup">{t('signup')}</TabsTrigger>
         </TabsList>
         <TabsContent value="login">
           <Card>
             <CardHeader>
-              <CardTitle>Login</CardTitle>
-              <CardDescription>Welcome back! Sign in to your account.</CardDescription>
+              <CardTitle>{t('auth.login.title')}</CardTitle>
+              <CardDescription>{t('auth.login.description')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Form {...loginForm}>
@@ -127,8 +128,8 @@ const Auth = () => {
         <TabsContent value="signup">
           <Card>
             <CardHeader>
-              <CardTitle>Sign Up</CardTitle>
-              <CardDescription>Create a new account to get started.</CardDescription>
+              <CardTitle>{t('auth.signup.title')}</CardTitle>
+              <CardDescription>{t('auth.signup.description')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Form {...signUpForm}>

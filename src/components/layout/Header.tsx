@@ -1,9 +1,22 @@
 
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Logo from "../Logo";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const Header = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/');
+  };
+
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `text-sm font-medium text-muted-foreground transition-colors hover:text-foreground ${isActive ? 'text-foreground' : ''}`;
 
@@ -15,19 +28,31 @@ const Header = () => {
         </div>
         <nav className="flex items-center space-x-6">
           <NavLink to="/browse" className={navLinkClass}>
-            Browse
+            {t('browse')}
           </NavLink>
           <NavLink to="/pricing" className={navLinkClass}>
-            Pricing
+            {t('pricing')}
           </NavLink>
         </nav>
         <div className="flex flex-1 items-center justify-end space-x-2">
-          <Button variant="ghost" asChild>
-            <Link to="/login">Login</Link>
-          </Button>
-          <Button asChild>
-            <Link to="/signup">Sign Up</Link>
-          </Button>
+          <LanguageSwitcher />
+          {user ? (
+            <>
+              <Button variant="ghost" asChild>
+                <Link to="/dashboard">{t('header.dashboard')}</Link>
+              </Button>
+              <Button onClick={handleLogout}>{t('header.logout')}</Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" asChild>
+                <Link to="/auth">{t('login')}</Link>
+              </Button>
+              <Button asChild>
+                <Link to="/auth">{t('signup')}</Link>
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>
