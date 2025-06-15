@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -30,6 +31,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/context/AuthContext';
+import { useEffect } from 'react';
 
 const signUpSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
@@ -45,6 +48,14 @@ const Auth = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const { t } = useTranslation();
+  const { user } = useAuth();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   const signUpForm = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
@@ -57,46 +68,103 @@ const Auth = () => {
   });
 
   const handleSignUp = async (values: z.infer<typeof signUpSchema>) => {
-    setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email: values.email,
-      password: values.password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
-      },
-    });
-    if (error) {
-      toast({ title: 'Sign Up Error', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: 'Success!', description: 'Check your email for the confirmation link.' });
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+        },
+      });
+      
+      if (error) {
+        console.error('Sign up error:', error);
+        toast({ 
+          title: 'Sign Up Error', 
+          description: error.message, 
+          variant: 'destructive' 
+        });
+      } else {
+        toast({ 
+          title: 'Success!', 
+          description: 'Check your email for the confirmation link.' 
+        });
+      }
+    } catch (err) {
+      console.error('Unexpected signup error:', err);
+      toast({ 
+        title: 'Error', 
+        description: 'An unexpected error occurred during signup.', 
+        variant: 'destructive' 
+      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleLogin = async (values: z.infer<typeof loginSchema>) => {
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: values.email,
-      password: values.password,
-    });
-    if (error) {
-      toast({ title: 'Login Error', description: error.message, variant: 'destructive' });
-    } else {
-      navigate('/dashboard');
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+      });
+      
+      if (error) {
+        console.error('Login error:', error);
+        toast({ 
+          title: 'Login Error', 
+          description: error.message, 
+          variant: 'destructive' 
+        });
+      } else {
+        toast({ 
+          title: 'Success!', 
+          description: 'Login successful!' 
+        });
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      console.error('Unexpected login error:', err);
+      toast({ 
+        title: 'Error', 
+        description: 'An unexpected error occurred during login.', 
+        variant: 'destructive' 
+      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleGoogleLogin = async () => {
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/dashboard` },
-    });
-    if (error) {
-      toast({ title: 'Google Login Error', description: error.message, variant: 'destructive' });
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { 
+          redirectTo: `${window.location.origin}/dashboard` 
+        },
+      });
+      
+      if (error) {
+        console.error('Google login error:', error);
+        toast({ 
+          title: 'Google Login Error', 
+          description: error.message, 
+          variant: 'destructive' 
+        });
+      }
+    } catch (err) {
+      console.error('Unexpected Google login error:', err);
+      toast({ 
+        title: 'Error', 
+        description: 'An unexpected error occurred with Google login.', 
+        variant: 'destructive' 
+      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -106,6 +174,7 @@ const Auth = () => {
           <TabsTrigger value="login">{t('login')}</TabsTrigger>
           <TabsTrigger value="signup">{t('signup')}</TabsTrigger>
         </TabsList>
+        
         <TabsContent value="login">
           <Card>
             <CardHeader>
@@ -115,16 +184,70 @@ const Auth = () => {
             <CardContent className="space-y-4">
               <Form {...loginForm}>
                 <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
-                  <FormField control={loginForm.control} name="email" render={({ field }) => ( <FormItem> <FormLabel>Email</FormLabel> <FormControl> <Input placeholder="you@example.com" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                  <FormField control={loginForm.control} name="password" render={({ field }) => ( <FormItem> <FormLabel>Password</FormLabel> <FormControl> <Input type="password" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                  <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Signing in...' : 'Sign In'}</Button>
+                  <FormField 
+                    control={loginForm.control} 
+                    name="email" 
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="email"
+                            placeholder="you@example.com" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField 
+                    control={loginForm.control} 
+                    name="password" 
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="password" 
+                            placeholder="Your password"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? 'Signing in...' : 'Sign In'}
+                  </Button>
                 </form>
               </Form>
-              <div className="relative"><div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div><div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-muted-foreground">Or continue with</span></div></div>
-              <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={loading}><Chrome className="mr-2 h-4 w-4" />Google</Button>
+              
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+              
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={handleGoogleLogin} 
+                disabled={loading}
+              >
+                <Chrome className="mr-2 h-4 w-4" />
+                Google
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
+        
         <TabsContent value="signup">
           <Card>
             <CardHeader>
@@ -134,13 +257,66 @@ const Auth = () => {
             <CardContent className="space-y-4">
               <Form {...signUpForm}>
                 <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
-                  <FormField control={signUpForm.control} name="email" render={({ field }) => ( <FormItem> <FormLabel>Email</FormLabel> <FormControl> <Input placeholder="you@example.com" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                  <FormField control={signUpForm.control} name="password" render={({ field }) => ( <FormItem> <FormLabel>Password</FormLabel> <FormControl> <Input type="password" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                  <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Creating account...' : 'Create Account'}</Button>
+                  <FormField 
+                    control={signUpForm.control} 
+                    name="email" 
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="email"
+                            placeholder="you@example.com" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField 
+                    control={signUpForm.control} 
+                    name="password" 
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="password" 
+                            placeholder="Create a password (min 6 characters)"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? 'Creating account...' : 'Create Account'}
+                  </Button>
                 </form>
               </Form>
-              <div className="relative"><div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div><div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-muted-foreground">Or sign up with</span></div></div>
-              <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={loading}><Chrome className="mr-2 h-4 w-4" />Google</Button>
+              
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or sign up with
+                  </span>
+                </div>
+              </div>
+              
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={handleGoogleLogin} 
+                disabled={loading}
+              >
+                <Chrome className="mr-2 h-4 w-4" />
+                Google
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
