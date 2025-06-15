@@ -21,7 +21,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
-import { Chrome } from 'lucide-react';
+import { Chrome, Mail, Lock, User } from 'lucide-react';
 import {
   Form,
   FormControl,
@@ -35,13 +35,13 @@ import { useAuth } from '@/context/AuthContext';
 import { useEffect } from 'react';
 
 const signUpSchema = z.object({
-  email: z.string().email({ message: 'Invalid email address.' }),
-  password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
+  email: z.string().email({ message: 'Alamat email tidak valid.' }),
+  password: z.string().min(6, { message: 'Password minimal 6 karakter.' }),
 });
 
 const loginSchema = z.object({
-  email: z.string().email({ message: 'Invalid email address.' }),
-  password: z.string().min(1, { message: 'Password is required.' }),
+  email: z.string().email({ message: 'Alamat email tidak valid.' }),
+  password: z.string().min(1, { message: 'Password wajib diisi.' }),
 });
 
 const Auth = () => {
@@ -80,22 +80,34 @@ const Auth = () => {
       
       if (error) {
         console.error('Sign up error:', error);
+        
+        // Handle specific errors with friendly messages
+        let errorMessage = error.message;
+        if (error.message.includes('already registered')) {
+          errorMessage = 'Email sudah terdaftar. Silakan login atau gunakan email lain.';
+        } else if (error.message.includes('Invalid email')) {
+          errorMessage = 'Format email tidak valid.';
+        } else if (error.message.includes('Password')) {
+          errorMessage = 'Password tidak memenuhi kriteria keamanan.';
+        }
+        
         toast({ 
-          title: 'Sign Up Error', 
-          description: error.message, 
+          title: 'Gagal Daftar', 
+          description: errorMessage, 
           variant: 'destructive' 
         });
       } else {
         toast({ 
-          title: 'Success!', 
-          description: 'Check your email for the confirmation link.' 
+          title: 'Berhasil!', 
+          description: 'Silakan cek email Anda untuk konfirmasi pendaftaran.' 
         });
+        signUpForm.reset();
       }
     } catch (err) {
       console.error('Unexpected signup error:', err);
       toast({ 
         title: 'Error', 
-        description: 'An unexpected error occurred during signup.', 
+        description: 'Terjadi kesalahan tidak terduga saat mendaftar.', 
         variant: 'destructive' 
       });
     } finally {
@@ -113,15 +125,24 @@ const Auth = () => {
       
       if (error) {
         console.error('Login error:', error);
+        
+        // Handle specific errors with friendly messages
+        let errorMessage = error.message;
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = 'Email atau password salah. Silakan coba lagi.';
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = 'Email belum dikonfirmasi. Silakan cek email Anda.';
+        }
+        
         toast({ 
-          title: 'Login Error', 
-          description: error.message, 
+          title: 'Gagal Login', 
+          description: errorMessage, 
           variant: 'destructive' 
         });
       } else {
         toast({ 
-          title: 'Success!', 
-          description: 'Login successful!' 
+          title: 'Berhasil!', 
+          description: 'Login berhasil!' 
         });
         navigate('/dashboard');
       }
@@ -129,7 +150,7 @@ const Auth = () => {
       console.error('Unexpected login error:', err);
       toast({ 
         title: 'Error', 
-        description: 'An unexpected error occurred during login.', 
+        description: 'Terjadi kesalahan tidak terduga saat login.', 
         variant: 'destructive' 
       });
     } finally {
@@ -149,9 +170,13 @@ const Auth = () => {
       
       if (error) {
         console.error('Google login error:', error);
+        let errorMessage = error.message;
+        if (error.message.includes('provider is not enabled')) {
+          errorMessage = 'Login Google belum diaktifkan. Silakan hubungi administrator.';
+        }
         toast({ 
-          title: 'Google Login Error', 
-          description: error.message, 
+          title: 'Gagal Login Google', 
+          description: errorMessage, 
           variant: 'destructive' 
         });
       }
@@ -159,7 +184,7 @@ const Auth = () => {
       console.error('Unexpected Google login error:', err);
       toast({ 
         title: 'Error', 
-        description: 'An unexpected error occurred with Google login.', 
+        description: 'Terjadi kesalahan tidak terduga dengan login Google.', 
         variant: 'destructive' 
       });
     } finally {
@@ -168,159 +193,196 @@ const Auth = () => {
   };
 
   return (
-    <div className="container flex items-center justify-center min-h-[calc(100vh-12rem)]">
-      <Tabs defaultValue="login" className="w-[400px]">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="login">{t('login')}</TabsTrigger>
-          <TabsTrigger value="signup">{t('signup')}</TabsTrigger>
-        </TabsList>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Selamat Datang
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Masuk atau daftar untuk melanjutkan
+          </p>
+        </div>
         
-        <TabsContent value="login">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('auth.login.title')}</CardTitle>
-              <CardDescription>{t('auth.login.description')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Form {...loginForm}>
-                <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
-                  <FormField 
-                    control={loginForm.control} 
-                    name="email" 
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="email"
-                            placeholder="you@example.com" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField 
-                    control={loginForm.control} 
-                    name="password" 
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="password" 
-                            placeholder="Your password"
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Signing in...' : 'Sign In'}
-                  </Button>
-                </form>
-              </Form>
-              
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
+        <Tabs defaultValue="login" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="login" className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              Masuk
+            </TabsTrigger>
+            <TabsTrigger value="signup" className="flex items-center gap-2">
+              <Mail className="w-4 h-4" />
+              Daftar
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="login">
+            <Card className="shadow-lg">
+              <CardHeader className="text-center">
+                <CardTitle className="text-xl">Masuk ke Akun</CardTitle>
+                <CardDescription>Masukkan email dan password Anda</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Form {...loginForm}>
+                  <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
+                    <FormField 
+                      control={loginForm.control} 
+                      name="email" 
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2">
+                            <Mail className="w-4 h-4" />
+                            Email
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="email"
+                              placeholder="nama@email.com" 
+                              className="h-11"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField 
+                      control={loginForm.control} 
+                      name="password" 
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2">
+                            <Lock className="w-4 h-4" />
+                            Password
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="password" 
+                              placeholder="Masukkan password"
+                              className="h-11"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button type="submit" className="w-full h-11 text-lg" disabled={loading}>
+                      {loading ? 'Memproses...' : 'Masuk'}
+                    </Button>
+                  </form>
+                </Form>
+                
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Atau masuk dengan
+                    </span>
+                  </div>
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    Or continue with
-                  </span>
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full h-11" 
+                  onClick={handleGoogleLogin} 
+                  disabled={loading}
+                >
+                  <Chrome className="mr-2 h-5 w-5" />
+                  Google
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="signup">
+            <Card className="shadow-lg">
+              <CardHeader className="text-center">
+                <CardTitle className="text-xl">Buat Akun Baru</CardTitle>
+                <CardDescription>Daftar untuk memulai menggunakan aplikasi</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Form {...signUpForm}>
+                  <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
+                    <FormField 
+                      control={signUpForm.control} 
+                      name="email" 
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2">
+                            <Mail className="w-4 h-4" />
+                            Email
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="email"
+                              placeholder="nama@email.com" 
+                              className="h-11"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField 
+                      control={signUpForm.control} 
+                      name="password" 
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2">
+                            <Lock className="w-4 h-4" />
+                            Password
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="password" 
+                              placeholder="Minimal 6 karakter"
+                              className="h-11"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button type="submit" className="w-full h-11 text-lg" disabled={loading}>
+                      {loading ? 'Membuat akun...' : 'Daftar'}
+                    </Button>
+                  </form>
+                </Form>
+                
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Atau daftar dengan
+                    </span>
+                  </div>
                 </div>
-              </div>
-              
-              <Button 
-                variant="outline" 
-                className="w-full" 
-                onClick={handleGoogleLogin} 
-                disabled={loading}
-              >
-                <Chrome className="mr-2 h-4 w-4" />
-                Google
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full h-11" 
+                  onClick={handleGoogleLogin} 
+                  disabled={loading}
+                >
+                  <Chrome className="mr-2 h-5 w-5" />
+                  Google
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
         
-        <TabsContent value="signup">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('auth.signup.title')}</CardTitle>
-              <CardDescription>{t('auth.signup.description')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Form {...signUpForm}>
-                <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
-                  <FormField 
-                    control={signUpForm.control} 
-                    name="email" 
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="email"
-                            placeholder="you@example.com" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField 
-                    control={signUpForm.control} 
-                    name="password" 
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="password" 
-                            placeholder="Create a password (min 6 characters)"
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Creating account...' : 'Create Account'}
-                  </Button>
-                </form>
-              </Form>
-              
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    Or sign up with
-                  </span>
-                </div>
-              </div>
-              
-              <Button 
-                variant="outline" 
-                className="w-full" 
-                onClick={handleGoogleLogin} 
-                disabled={loading}
-              >
-                <Chrome className="mr-2 h-4 w-4" />
-                Google
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+        <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+          <p>Dengan mendaftar, Anda menyetujui syarat dan ketentuan kami</p>
+        </div>
+      </div>
     </div>
   );
 };
