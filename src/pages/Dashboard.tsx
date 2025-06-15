@@ -1,23 +1,18 @@
 
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/context/AuthContext';
+import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from '@/components/ui/use-toast';
-
-interface Profile {
-  username: string | null;
-  credit_balance: number;
-  subscription_tier: string;
-}
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/context/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
+import PromptRequestForm from '@/components/dashboard/PromptRequestForm';
+import PromptRequestList from '@/components/dashboard/PromptRequestList';
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
+  const { profile, loading: profileLoading, refetch } = useProfile();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -25,84 +20,91 @@ const Dashboard = () => {
     }
   }, [user, authLoading, navigate]);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (user) {
-        setLoading(true);
-        try {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('username, credit_balance, subscription_tier')
-            .eq('id', user.id)
-            .single();
-
-          if (error && error.code !== 'PGRST116') { // Ignore error for no rows found
-            throw error;
-          }
-
-          if (data) {
-            setProfile(data);
-          }
-        } catch (error: any) {
-          toast({
-            title: 'Error fetching profile',
-            description: error.message,
-            variant: 'destructive',
-          });
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-
-    if (!authLoading && user) {
-      fetchProfile();
-    } else if (!authLoading && !user) {
-      setLoading(false);
-    }
-  }, [user, authLoading]);
-
-  if (authLoading || loading) {
+  if (authLoading || profileLoading) {
     return <div className="container py-8 text-center">Loading...</div>;
   }
   
   if (!user) {
-    return null; // Should be redirected by the effect
+    return null;
   }
+
+  const isUnlimited = profile?.subscription_tier === 'unlimited';
 
   return (
     <div className="container py-8">
-      <h1 className="text-4xl font-bold mb-4">Welcome, {profile?.username || user.email}</h1>
+      <div className="flex items-center gap-4 mb-4">
+        <h1 className="text-4xl font-bold">Welcome, {profile?.username || user.email}</h1>
+        {isUnlimited && (
+          <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 px-3 py-1">
+            Unlimited
+          </Badge>
+        )}
+      </div>
       <p className="text-muted-foreground mb-8">This is your personal dashboard.</p>
       
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
         <Card>
           <CardHeader>
             <CardTitle>Credit Balance</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-bold">{profile?.credit_balance ?? 0}</p>
+            <p className="text-4xl font-bold">
+              {isUnlimited ? '∞' : (profile?.credit_balance ?? 0)}
+            </p>
+            {isUnlimited && (
+              <p className="text-sm text-muted-foreground mt-2">Unlimited credits</p>
+            )}
           </CardContent>
         </Card>
+        
         <Card>
           <CardHeader>
-            <CardTitle>My Claimed Prompts</CardTitle>
+            <CardTitle>Subscription</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">You have not claimed any prompts yet.</p>
-            <Button className="mt-4" onClick={() => navigate('/browse')}>Browse Prompts</Button>
+            <Badge variant={isUnlimited ? 'default' : 'secondary'}>
+              {profile?.subscription_tier || 'free'}
+            </Badge>
+            {isUnlimited && (
+              <p className="text-sm text-muted-foreground mt-2">All prompts included</p>
+            )}
           </CardContent>
         </Card>
+        
         <Card>
           <CardHeader>
-            <CardTitle>Profile Settings</CardTitle>
+            <CardTitle>Browse Prompts</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">Update your account information.</p>
-            <Button variant="outline" className="mt-4" onClick={() => navigate('/dashboard/settings')}>Go to Settings</Button>
+            <p className="text-muted-foreground mb-4">
+              {isUnlimited 
+                ? 'Access all prompts for free with your unlimited subscription.' 
+                : 'Discover amazing prompts for your projects.'
+              }
+            </p>
+            <Button onClick={() => navigate('/browse')}>Browse Prompts</Button>
           </CardContent>
         </Card>
       </div>
+
+      {isUnlimited && (
+        <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 mb-8">
+          <PromptRequestForm onRequestSubmitted={refetch} />
+          <PromptRequestList />
+        </div>
+      )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Profile Settings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground mb-4">Update your account information.</p>
+          <Button variant="outline" onClick={() => navigate('/dashboard/settings')}>
+            Go to Settings
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 };

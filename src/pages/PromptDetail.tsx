@@ -2,13 +2,15 @@
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Tables } from '@/integrations/supabase/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Copy } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from '@/context/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
+import { useState } from 'react';
 
 const fetchPromptById = async (id: string) => {
   const { data, error } = await supabase
@@ -24,6 +26,9 @@ const fetchPromptById = async (id: string) => {
 const PromptDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { profile } = useProfile();
+  const [claiming, setClaiming] = useState(false);
 
   const { data: prompt, isLoading, error } = useQuery({
     queryKey: ['prompt', id],
@@ -38,6 +43,58 @@ const PromptDetail = () => {
         title: "Copied!",
         description: "Prompt copied to clipboard.",
       });
+    }
+  };
+
+  const handleClaim = async () => {
+    if (!user || !prompt) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to claim prompts.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setClaiming(true);
+
+    try {
+      const { error } = await supabase.rpc('claim_prompt', {
+        prompt_id_to_claim: prompt.id
+      });
+
+      if (error) {
+        console.error('Error claiming prompt:', error);
+        
+        if (error.message.includes('Insufficient credits')) {
+          toast({
+            title: "Insufficient Credits",
+            description: "You don't have enough credits to claim this prompt.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: error.message || "Failed to claim prompt. Please try again.",
+            variant: "destructive",
+          });
+        }
+        return;
+      }
+
+      toast({
+        title: "Success!",
+        description: "Prompt claimed successfully!",
+      });
+    } catch (error: any) {
+      console.error('Unexpected error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setClaiming(false);
     }
   };
 
@@ -67,6 +124,9 @@ const PromptDetail = () => {
       </div>
     );
   }
+
+  const isUnlimited = profile?.subscription_tier === 'unlimited';
+  const canClaimForFree = isUnlimited;
 
   return (
     <div className="container py-8">
@@ -113,10 +173,36 @@ const PromptDetail = () => {
                 <Copy className="mr-2 h-4 w-4" />
                 Copy Prompt
               </Button>
-              <Button disabled className="w-full">
-                Claim with {prompt.credit_cost} Credit{prompt.credit_cost !== 1 ? 's' : ''}
-              </Button>
+              
+              {user ? (
+                <Button 
+                  onClick={handleClaim} 
+                  className="w-full" 
+                  disabled={claiming}
+                  variant={canClaimForFree ? "default" : "outline"}
+                >
+                  {claiming ? 'Claiming...' : (
+                    canClaimForFree 
+                      ? 'Claim for Free' 
+                      : `Claim with ${prompt.credit_cost} Credit${prompt.credit_cost !== 1 ? 's' : ''}`
+                  )}
+                </Button>
+              ) : (
+                <Button 
+                  onClick={() => window.location.href = '/auth'} 
+                  className="w-full"
+                  variant="outline"
+                >
+                  Login to Claim
+                </Button>
+              )}
+              
               {prompt.is_premium && <Badge className="w-full justify-center">Premium</Badge>}
+              {isUnlimited && (
+                <Badge className="w-full justify-center bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0">
+                  Unlimited Access
+                </Badge>
+              )}
             </CardContent>
           </Card>
         </div>

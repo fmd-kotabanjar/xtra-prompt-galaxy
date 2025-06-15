@@ -30,6 +30,48 @@ export type Database = {
         }
         Relationships: []
       }
+      prompt_requests: {
+        Row: {
+          completed_prompt_id: string | null
+          created_at: string
+          id: string
+          request_details: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          completed_prompt_id?: string | null
+          created_at?: string
+          id?: string
+          request_details: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          completed_prompt_id?: string | null
+          created_at?: string
+          id?: string
+          request_details?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prompt_requests_completed_prompt_id_fkey"
+            columns: ["completed_prompt_id"]
+            isOneToOne: false
+            referencedRelation: "prompts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prompt_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prompts: {
         Row: {
           category: string
@@ -69,12 +111,51 @@ export type Database = {
         }
         Relationships: []
       }
+      user_claimed_prompts: {
+        Row: {
+          claimed_at: string
+          id: string
+          prompt_id: string
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          id?: string
+          prompt_id: string
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string
+          id?: string
+          prompt_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_claimed_prompts_prompt_id_fkey"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "prompts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_claimed_prompts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_prompt: {
+        Args: { prompt_id_to_claim: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
