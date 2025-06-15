@@ -7,10 +7,12 @@ import { useDummyAuth } from "@/components/DummyAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { Badge } from "@/components/ui/badge";
+import { Shield, User } from "lucide-react";
 
 const Header = () => {
   const { user } = useAuth();
-  const { user: dummyUser, logout: dummyLogout } = useDummyAuth();
+  const { user: dummyUser, logout: dummyLogout, isAdmin } = useDummyAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -47,6 +49,26 @@ const Header = () => {
           <LanguageSwitcher />
           {currentUser ? (
             <>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-muted-foreground">
+                  {dummyUser?.name || currentUser.email}
+                </span>
+                {dummyUser && (
+                  <Badge variant={isAdmin() ? "destructive" : "secondary"} className="text-xs">
+                    {isAdmin() ? (
+                      <>
+                        <Shield className="w-3 h-3 mr-1" />
+                        Admin
+                      </>
+                    ) : (
+                      <>
+                        <User className="w-3 h-3 mr-1" />
+                        User
+                      </>
+                    )}
+                  </Badge>
+                )}
+              </div>
               <Button variant="ghost" asChild>
                 <Link to="/dashboard">{t('header.dashboard')}</Link>
               </Button>

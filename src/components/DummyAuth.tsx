@@ -5,29 +5,33 @@ interface User {
   id: string;
   email: string;
   role: 'admin' | 'user';
+  name?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  isAdmin: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Dummy accounts
+// Dummy accounts dengan role yang lebih jelas
 const DUMMY_ACCOUNTS = [
   {
     id: '1',
     email: 'admin@example.com',
     password: 'admin123',
-    role: 'admin' as const
+    role: 'admin' as const,
+    name: 'Administrator'
   },
   {
     id: '2',
     email: 'user@example.com',
     password: 'user123',
-    role: 'user' as const
+    role: 'user' as const,
+    name: 'Regular User'
   }
 ];
 
@@ -50,10 +54,12 @@ export const DummyAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const user = {
         id: account.id,
         email: account.email,
-        role: account.role
+        role: account.role,
+        name: account.name
       };
       setUser(user);
       localStorage.setItem('dummy-user', JSON.stringify(user));
+      console.log('User logged in:', user);
       return true;
     }
     return false;
@@ -62,10 +68,15 @@ export const DummyAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const logout = () => {
     setUser(null);
     localStorage.removeItem('dummy-user');
+    console.log('User logged out');
+  };
+
+  const isAdmin = () => {
+    return user?.role === 'admin';
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );
