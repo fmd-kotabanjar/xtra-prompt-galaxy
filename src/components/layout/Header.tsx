@@ -3,17 +3,26 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Logo from "../Logo";
 import { useAuth } from "@/context/AuthContext";
+import { useDummyAuth } from "@/components/DummyAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const Header = () => {
   const { user } = useAuth();
+  const { user: dummyUser, logout: dummyLogout } = useDummyAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  const currentUser = user || dummyUser;
+
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    if (user) {
+      await supabase.auth.signOut();
+    }
+    if (dummyUser) {
+      dummyLogout();
+    }
     navigate('/');
   };
 
@@ -36,7 +45,7 @@ const Header = () => {
         </nav>
         <div className="flex flex-1 items-center justify-end space-x-2">
           <LanguageSwitcher />
-          {user ? (
+          {currentUser ? (
             <>
               <Button variant="ghost" asChild>
                 <Link to="/dashboard">{t('header.dashboard')}</Link>
@@ -49,7 +58,7 @@ const Header = () => {
                 <Link to="/auth">{t('login')}</Link>
               </Button>
               <Button asChild>
-                <Link to="/auth">{t('signup')}</Link>
+                <Link to="/demo-auth">Demo Login</Link>
               </Button>
             </>
           )}
