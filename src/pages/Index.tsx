@@ -3,26 +3,28 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Bot, Feather, Star } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const Index = () => {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-col gap-16 md:gap-24 pb-16">
       {/* Hero Section */}
       <section className="container grid lg:grid-cols-2 gap-10 items-center pt-16 md:pt-24">
         <div className="flex flex-col gap-4 items-start text-center lg:text-left">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tighter">
-            Unlock Creativity with Next-Level AI Prompts
+            {t('hero.title')}
           </h1>
           <p className="text-lg text-muted-foreground max-w-lg mx-auto lg:mx-0">
-            Discover, save, and claim high-quality AI prompts for Midjourney,
-            ChatGPT, and more. Elevate your creations with our curated marketplace.
+            {t('hero.description')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 mt-4 w-full sm:w-auto mx-auto lg:mx-0">
             <Button asChild size="lg">
-              <Link to="/signup">Get Started <ArrowRight className="ml-2 h-5 w-5" /></Link>
+              <Link to="/signup">{t('hero.getStarted')} <ArrowRight className="ml-2 h-5 w-5" /></Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link to="/browse">Browse Prompts</Link>
+              <Link to="/browse">{t('hero.browsePrompts')}</Link>
             </Button>
           </div>
         </div>
@@ -38,9 +40,9 @@ const Index = () => {
       {/* How It Works Section */}
       <section className="container">
         <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tighter">How It Works</h2>
+          <h2 className="text-3xl font-bold tracking-tighter">{t('howItWorks.title')}</h2>
           <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
-            A simple credit-based system to get access to premium prompts in three easy steps.
+            {t('howItWorks.description')}
           </p>
         </div>
         <div className="grid md:grid-cols-3 gap-8 mt-12">
@@ -49,10 +51,10 @@ const Index = () => {
               <div className="mx-auto bg-primary/10 text-primary rounded-full h-12 w-12 flex items-center justify-center">
                 <Feather className="h-6 w-6" />
               </div>
-              <CardTitle className="mt-4">Discover</CardTitle>
+              <CardTitle className="mt-4">{t('howItWorks.discover.title')}</CardTitle>
             </CardHeader>
             <CardContent>
-              Browse our extensive library of prompts for various AI platforms.
+              {t('howItWorks.discover.description')}
             </CardContent>
           </Card>
           <Card className="text-center">
@@ -60,10 +62,10 @@ const Index = () => {
                <div className="mx-auto bg-primary/10 text-primary rounded-full h-12 w-12 flex items-center justify-center">
                 <Bot className="h-6 w-6" />
               </div>
-              <CardTitle className="mt-4">Claim</CardTitle>
+              <CardTitle className="mt-4">{t('howItWorks.claim.title')}</CardTitle>
             </CardHeader>
             <CardContent>
-              Use your credits to claim prompts and unlock the full text.
+              {t('howItWorks.claim.description')}
             </CardContent>
           </Card>
           <Card className="text-center">
@@ -71,10 +73,10 @@ const Index = () => {
                <div className="mx-auto bg-primary/10 text-primary rounded-full h-12 w-12 flex items-center justify-center">
                 <Star className="h-6 w-6" />
               </div>
-              <CardTitle className="mt-4">Create</CardTitle>
+              <CardTitle className="mt-4">{t('howItWorks.create.title')}</CardTitle>
             </CardHeader>
             <CardContent>
-              Generate amazing content with your newly acquired high-quality prompts.
+              {t('howItWorks.create.description')}
             </CardContent>
           </Card>
         </div>
@@ -83,9 +85,9 @@ const Index = () => {
       {/* Featured Prompts Section */}
       <section className="container">
         <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tighter">Featured Prompts</h2>
+          <h2 className="text-3xl font-bold tracking-tighter">{t('featured.title')}</h2>
           <p className="text-muted-foreground mt-2">
-            A sneak peek at some of our top-rated prompts.
+            {t('featured.description')}
           </p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12">
@@ -103,7 +105,7 @@ const Index = () => {
         </div>
         <div className="text-center mt-8">
           <Button asChild variant="outline">
-            <Link to="/browse">View All Prompts</Link>
+            <Link to="/browse">{t('featured.viewAll')}</Link>
           </Button>
         </div>
       </section>
@@ -112,22 +114,22 @@ const Index = () => {
       <section className="bg-secondary/50 py-16 md:py-24">
         <div className="container">
           <div className="text-center">
-            <h2 className="text-3xl font-bold tracking-tighter">Loved by Creatives</h2>
+            <h2 className="text-3xl font-bold tracking-tighter">{t('testimonials.title')}</h2>
             <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
-              See what our users are saying about XtraPrompt.
+              {t('testimonials.description')}
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-8 mt-12 max-w-4xl mx-auto">
             <Card>
               <CardContent className="p-6">
-                <p className="italic">"XtraPrompt has revolutionized my workflow. The quality of prompts is unmatched and has saved me hours of brainstorming!"</p>
-                <p className="font-semibold mt-4 text-right">- Creative Director</p>
+                <p className="italic">{t('testimonials.first')}</p>
+                <p className="font-semibold mt-4 text-right">{t('testimonials.first.author')}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-6">
-                <p className="italic">"Finally, a place to find curated prompts that actually work. The credit system is fair and easy to use. Highly recommended!"</p>
-                <p className="font-semibold mt-4 text-right">- Freelance Artist</p>
+                <p className="italic">{t('testimonials.second')}</p>
+                <p className="font-semibold mt-4 text-right">{t('testimonials.second.author')}</p>
               </CardContent>
             </Card>
           </div>
