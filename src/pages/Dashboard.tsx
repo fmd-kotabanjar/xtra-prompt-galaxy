@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
 import PromptRequestForm from '@/components/dashboard/PromptRequestForm';
 import PromptRequestList from '@/components/dashboard/PromptRequestList';
+import { Shield } from 'lucide-react';
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -86,6 +87,27 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Admin Panel Access */}
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="w-5 h-5" />
+            Administrator Panel
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground mb-4">
+            Kelola database prompt dan user sebagai administrator.
+          </p>
+          <Button variant="destructive" asChild>
+            <Link to="/admin">
+              <Shield className="w-4 h-4 mr-2" />
+              Buka Admin Panel
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
 
       {isUnlimited && (
         <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 mb-8">
