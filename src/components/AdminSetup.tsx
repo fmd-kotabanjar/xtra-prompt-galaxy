@@ -17,7 +17,7 @@ const AdminSetup = () => {
     if (result.success) {
       toast({
         title: "Admin Account Created!",
-        description: "Admin account 'siadminsi' has been created successfully.",
+        description: "Admin account 'siadminsi@admin.com' has been created successfully.",
       });
     } else {
       toast({
@@ -39,7 +39,7 @@ const AdminSetup = () => {
         <p className="text-sm text-muted-foreground mb-4">
           Click the button below to create the admin account with:
           <br />
-          <strong>Email:</strong> siadminsi
+          <strong>Email:</strong> siadminsi@admin.com
           <br />
           <strong>Password:</strong> hahahaadmin
         </p>

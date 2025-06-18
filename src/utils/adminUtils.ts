@@ -3,9 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const createAdminAccount = async () => {
   try {
-    // Sign up the admin user
+    // Sign up the admin user with valid email format
     const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: 'siadminsi',
+      email: 'siadminsi@admin.com',
       password: 'hahahaadmin',
       options: {
         data: {
