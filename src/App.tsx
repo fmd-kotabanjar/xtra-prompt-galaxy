@@ -19,6 +19,7 @@ import Dashboard from "./pages/Dashboard";
 import ProfileSettings from "./pages/ProfileSettings";
 import PromptDetail from "./pages/PromptDetail";
 import AdminPanel from "./pages/AdminPanel";
+import AdminSetupPage from "./pages/AdminSetup";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/dashboard/settings" element={<ProfileSettings />} />
                 <Route path="/admin" element={<AdminPanel />} />
+                <Route path="/admin-setup" element={<AdminSetupPage />} />
                 <Route path="/browse" element={<Browse />} />
                 <Route path="/prompt/:id" element={<PromptDetail />} />
                 <Route path="/pricing" element={<Pricing />} />

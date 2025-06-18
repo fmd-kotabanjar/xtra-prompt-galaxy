@@ -93,9 +93,6 @@ const Index = () => {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12">
           {[...Array(4)].map((_, i) => (
             <Card key={i} className="overflow-hidden">
-              <CardHeader className="p-0">
-                <img src="/placeholder.svg" alt={`Prompt ${i + 1}`} className="aspect-square object-cover w-full" />
-              </CardHeader>
               <CardContent className="p-4">
                 <h3 className="font-semibold">Prompt Title {i + 1}</h3>
                 <p className="text-sm text-muted-foreground">Category</p>
@@ -107,32 +104,6 @@ const Index = () => {
           <Button asChild variant="outline">
             <Link to="/browse">{t('featured.viewAll')}</Link>
           </Button>
-        </div>
-      </section>
-      
-      {/* Testimonials Section */}
-      <section className="bg-secondary/50 py-16 md:py-24">
-        <div className="container">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold tracking-tighter">{t('testimonials.title')}</h2>
-            <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
-              {t('testimonials.description')}
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 gap-8 mt-12 max-w-4xl mx-auto">
-            <Card>
-              <CardContent className="p-6">
-                <p className="italic">{t('testimonials.first')}</p>
-                <p className="font-semibold mt-4 text-right">{t('testimonials.first.author')}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <p className="italic">{t('testimonials.second')}</p>
-                <p className="font-semibold mt-4 text-right">{t('testimonials.second.author')}</p>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </section>
     </div>

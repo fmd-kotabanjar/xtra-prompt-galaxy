@@ -105,7 +105,6 @@ const PromptDetail = () => {
         <Skeleton className="h-6 w-1/2 mb-8" />
         <div className="grid md:grid-cols-3 gap-8">
           <div className="md:col-span-2 space-y-6">
-            <Skeleton className="h-96 w-full" />
             <Skeleton className="h-24 w-full" />
           </div>
           <div>
@@ -138,12 +137,6 @@ const PromptDetail = () => {
             <span>•</span>
             <Badge variant="outline">{prompt.category}</Badge>
           </div>
-          
-          {prompt.example_image_url && (
-            <div className="aspect-video bg-muted rounded-lg mb-6 overflow-hidden flex items-center justify-center">
-              <img src={prompt.example_image_url} alt={prompt.title} className="w-full h-full object-contain" />
-            </div>
-          )}
 
           <h2 className="text-2xl font-semibold mb-3">Prompt</h2>
           <Card className="mb-6 bg-secondary">
