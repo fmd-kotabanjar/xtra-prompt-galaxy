@@ -1,7 +1,7 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useAdminRole } from '@/hooks/useAdminRole';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,6 +37,7 @@ interface Profile {
 
 const AdminPanel = () => {
   const { user, loading: authLoading } = useAuth();
+  const { isAdmin, loading: adminLoading } = useAdminRole();
   const navigate = useNavigate();
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -53,10 +54,14 @@ const AdminPanel = () => {
   });
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
+    if (!authLoading && !adminLoading) {
+      if (!user) {
+        navigate('/auth');
+      } else if (!isAdmin) {
+        navigate('/dashboard');
+      }
     }
-  }, [user, authLoading, navigate]);
+  }, [user, isAdmin, authLoading, adminLoading, navigate]);
 
   useEffect(() => {
     if (user) {
@@ -190,12 +195,12 @@ const AdminPanel = () => {
     }
   };
 
-  if (authLoading) {
+  if (authLoading || adminLoading) {
     return <div className="container py-8 text-center">Loading...</div>;
   }
 
-  if (!user) {
-    return null;
+  if (!user || !isAdmin) {
+    return <div className="container py-8 text-center">Access Denied</div>;
   }
 
   return (

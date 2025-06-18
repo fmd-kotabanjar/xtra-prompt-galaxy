@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
+import { useAdminRole } from '@/hooks/useAdminRole';
 import PromptRequestForm from '@/components/dashboard/PromptRequestForm';
 import PromptRequestList from '@/components/dashboard/PromptRequestList';
 import { Shield } from 'lucide-react';
@@ -13,6 +14,7 @@ import { Shield } from 'lucide-react';
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading, refetch } = useProfile();
+  const { isAdmin, loading: adminLoading } = useAdminRole();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,7 +23,7 @@ const Dashboard = () => {
     }
   }, [user, authLoading, navigate]);
 
-  if (authLoading || profileLoading) {
+  if (authLoading || profileLoading || adminLoading) {
     return <div className="container py-8 text-center">Loading...</div>;
   }
   
@@ -35,9 +37,15 @@ const Dashboard = () => {
     <div className="container py-8">
       <div className="flex items-center gap-4 mb-4">
         <h1 className="text-4xl font-bold">Welcome, {profile?.username || user.email}</h1>
-        {isUnlimited && (
+        {isAdmin && (
+          <Badge variant="destructive" className="px-3 py-1">
+            <Shield className="w-4 h-4 mr-2" />
+            Administrator
+          </Badge>
+        )}
+        {isUnlimited && !isAdmin && (
           <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 px-3 py-1">
-            Unlimited
+            Unlimited User
           </Badge>
         )}
       </div>
@@ -60,14 +68,21 @@ const Dashboard = () => {
         
         <Card>
           <CardHeader>
-            <CardTitle>Subscription</CardTitle>
+            <CardTitle>Account Type</CardTitle>
           </CardHeader>
           <CardContent>
-            <Badge variant={isUnlimited ? 'default' : 'secondary'}>
-              {profile?.subscription_tier || 'free'}
-            </Badge>
-            {isUnlimited && (
-              <p className="text-sm text-muted-foreground mt-2">All prompts included</p>
+            {isAdmin ? (
+              <Badge variant="destructive">Administrator</Badge>
+            ) : (
+              <Badge variant={isUnlimited ? 'default' : 'secondary'}>
+                {profile?.subscription_tier || 'free'}
+              </Badge>
+            )}
+            {isAdmin && (
+              <p className="text-sm text-muted-foreground mt-2">Full system access</p>
+            )}
+            {isUnlimited && !isAdmin && (
+              <p className="text-sm text-muted-foreground mt-2">All prompts included (read-only)</p>
             )}
           </CardContent>
         </Card>
@@ -78,8 +93,8 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">
-              {isUnlimited 
-                ? 'Access all prompts for free with your unlimited subscription.' 
+              {isUnlimited || isAdmin
+                ? 'Access all prompts for free.' 
                 : 'Discover amazing prompts for your projects.'
               }
             </p>
@@ -88,28 +103,31 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Admin Panel Access */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="w-5 h-5" />
-            Administrator Panel
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground mb-4">
-            Kelola database prompt dan user sebagai administrator.
-          </p>
-          <Button variant="destructive" asChild>
-            <Link to="/admin">
-              <Shield className="w-4 h-4 mr-2" />
-              Buka Admin Panel
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
+      {/* Admin Panel Access - Only for Admins */}
+      {isAdmin && (
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5" />
+              Administrator Panel
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              Kelola database prompt dan user sebagai administrator.
+            </p>
+            <Button variant="destructive" asChild>
+              <Link to="/admin">
+                <Shield className="w-4 h-4 mr-2" />
+                Buka Admin Panel
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
-      {isUnlimited && (
+      {/* Prompt Request - Only for Unlimited Users (not admins) */}
+      {isUnlimited && !isAdmin && (
         <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 mb-8">
           <PromptRequestForm onRequestSubmitted={refetch} />
           <PromptRequestList />

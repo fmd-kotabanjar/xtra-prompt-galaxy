@@ -8,9 +8,13 @@ import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Badge } from "@/components/ui/badge";
 import { Shield, User } from "lucide-react";
+import { useProfile } from "@/hooks/useProfile";
+import { useAdminRole } from "@/hooks/useAdminRole";
 
 const Header = () => {
   const { user } = useAuth();
+  const { profile } = useProfile();
+  const { isAdmin } = useAdminRole();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -46,10 +50,18 @@ const Header = () => {
                 <span className="text-sm text-muted-foreground">
                   {user.email}
                 </span>
-                <Badge variant="default" className="text-xs">
-                  <Shield className="w-3 h-3 mr-1" />
-                  Admin
-                </Badge>
+                {isAdmin && (
+                  <Badge variant="destructive" className="text-xs">
+                    <Shield className="w-3 h-3 mr-1" />
+                    Admin
+                  </Badge>
+                )}
+                {profile?.subscription_tier === 'unlimited' && !isAdmin && (
+                  <Badge variant="default" className="text-xs">
+                    <User className="w-3 h-3 mr-1" />
+                    Unlimited
+                  </Badge>
+                )}
               </div>
               <Button variant="ghost" asChild>
                 <Link to="/dashboard">{t('header.dashboard')}</Link>
