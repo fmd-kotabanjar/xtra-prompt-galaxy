@@ -173,6 +173,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       claim_prompt: {
         Args: { prompt_id_to_claim: string }
         Returns: undefined
