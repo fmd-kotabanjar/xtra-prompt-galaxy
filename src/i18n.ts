@@ -7,7 +7,8 @@ i18n
   .use(initReactI18next)
   .init({
     debug: false,
-    fallbackLng: 'id', // Changed default to Indonesian
+    fallbackLng: 'id', // Default ke Bahasa Indonesia
+    lng: 'id', // Set bahasa default ke Indonesia
     interpolation: {
       escapeValue: false, // not needed for react as it escapes by default
     },
