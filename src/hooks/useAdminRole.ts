@@ -24,7 +24,7 @@ export const useAdminRole = () => {
         
         console.log('Checking admin role for user:', user.id);
 
-        // First try using the RPC function
+        // First try using the new RPC function
         const { data: rpcResult, error: rpcError } = await supabase.rpc('is_admin');
         
         if (rpcError) {
@@ -72,9 +72,43 @@ export const useAdminRole = () => {
     refetch: () => {
       if (user && !authLoading) {
         setLoading(true);
-        // Re-trigger the effect by setting a dummy state change
         setError(null);
+        // Re-trigger the effect by updating a dummy state
+        setTimeout(() => {
+          if (!authLoading) {
+            checkAdminRole();
+          }
+        }, 100);
       }
     }
   };
+};
+
+// Helper function to manually trigger admin check
+const checkAdminRole = async (user: any) => {
+  if (!user) return false;
+  
+  try {
+    const { data: rpcResult, error: rpcError } = await supabase.rpc('is_admin');
+    
+    if (rpcError) {
+      const { data: roleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .limit(1);
+
+      if (roleError) {
+        return false;
+      }
+      
+      return roleData && roleData.length > 0;
+    }
+    
+    return rpcResult || false;
+  } catch (error) {
+    console.error('Error in admin check:', error);
+    return false;
+  }
 };

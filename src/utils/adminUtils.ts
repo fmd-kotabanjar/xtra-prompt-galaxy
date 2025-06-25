@@ -5,20 +5,29 @@ export const createAdminAccount = async () => {
   try {
     console.log('Starting admin account creation...');
     
-    // Check if admin already exists
-    const { data: existingAdmin, error: checkError } = await supabase
-      .from('user_roles')
-      .select('*')
-      .eq('role', 'admin')
-      .limit(1);
+    // Check if admin already exists using the new safe function
+    const { data: adminExists, error: checkError } = await supabase.rpc('is_admin');
 
     if (checkError) {
       console.error('Error checking existing admin:', checkError);
-      return { success: false, error: checkError.message };
-    }
+      // If RPC fails, try direct query as fallback
+      const { data: existingAdmin, error: directCheckError } = await supabase
+        .from('user_roles')
+        .select('*')
+        .eq('role', 'admin')
+        .limit(1);
 
-    if (existingAdmin && existingAdmin.length > 0) {
-      console.log('Admin already exists');
+      if (directCheckError) {
+        console.error('Direct check also failed:', directCheckError);
+        return { success: false, error: directCheckError.message };
+      }
+
+      if (existingAdmin && existingAdmin.length > 0) {
+        console.log('Admin already exists (direct check)');
+        return { success: false, error: 'Admin account already exists' };
+      }
+    } else if (adminExists) {
+      console.log('Admin already exists (RPC check)');
       return { success: false, error: 'Admin account already exists' };
     }
 
@@ -46,9 +55,10 @@ export const createAdminAccount = async () => {
     console.log('Admin user created:', authData.user.id);
 
     // Wait a moment to ensure user is properly created
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Add admin role to user_roles table
+    // The new policy allows this insert when no admin exists
     const { error: roleError } = await supabase
       .from('user_roles')
       .insert({
@@ -80,6 +90,16 @@ export const createAdminAccount = async () => {
 
 export const checkAdminExists = async () => {
   try {
+    // First try using the RPC function
+    const { data: adminExists, error: rpcError } = await supabase.rpc('is_admin');
+    
+    if (!rpcError) {
+      return { exists: adminExists || false, error: null };
+    }
+
+    console.log('RPC failed, using direct query:', rpcError);
+    
+    // Fallback to direct query
     const { data, error } = await supabase
       .from('user_roles')
       .select('id')
